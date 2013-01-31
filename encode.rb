@@ -1,13 +1,17 @@
 #!/usr/bin/env ruby
 
 require "fileutils"
+require "pathname"
 require "rubygems"
 require "chunky_png"
 require "json"
 
 BLOCK_SIZE = 8
 
-$fast_diff = true
+# how different a block has to be before it's considered different
+# 0 means lossless
+# a value of 0 kicks in a slightly faster algorithm
+$diff_threshold = 0
 
 def to_b64(i)
     v = nil
@@ -118,7 +122,7 @@ class Encoder
         output_map = []
         diff_block_count = 0
         
-        if $fast_diff
+        if $diff_threshold == 0 
             @height.times do |y|
                 @width.times do |x|
                     diff = false
@@ -157,7 +161,7 @@ class Encoder
                         end
                     end
     
-                    if diff > 0
+                    if diff > $diff_threshold
                         output_map << 1
                         diff_block_count = diff_block_count + 1
                     else
@@ -244,6 +248,6 @@ if __FILE__ == $0
     puts "Writing block data..."
     e.write_blocks("#{out_name}_blocks.png")
     puts "Writing metadata..."
-    e.write_metadata(out_name, "#{out_name}_data.js")
+    e.write_metadata(Pathname.new(out_name).basename, "#{out_name}_data.js")
     puts "Done!"
 end

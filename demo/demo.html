@@ -10,7 +10,7 @@ function draw() {
     if (canvas.getContext){
         var ctx = canvas.getContext('2d');
         
-        var a = new CanvasAnim(ctx, demoAnimation, 'demo_first.png', 'demo_blocks.png');
+        var a = new CanvasAnim(ctx, demoAnimation, 'demo_first.png', 'demo_blocks.jpg');
         a.animate(10);
     }
 }
@@ -22,7 +22,7 @@ function draw() {
   </head>
   <body onload="draw();">
     <div align="center">
-        <canvas id="demo" width="480" height="320"></canvas>
+        <canvas id="demo" width="360" height="640"></canvas>
     </div>
   </body>
 </html>

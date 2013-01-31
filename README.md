@@ -33,16 +33,44 @@ expects. If you have FFMPEG installed, this is a cinch:
 
 Then, run "encode.rb" like so:
 
-    ./encode.rb outputname videoframes
+    ./encode.rb output videoframes
 
 Ruby and ChunkyPNG aren't the fastest tools in the universe, so this may take some time --
-for a 480x320 video, expect it to take about 3 minutes per 100 frames. At the end, you'll
-get these files:
+for a 480x320 video, expect it to take about 3 minutes per 100 frames, using standard Ruby
+1.8.7. JRuby is, of course, much faster -- the same takes less than a minute.
 
-* outputname_first.png -- a verbatim copy of the first frame of your video
-* outputname_blocks.png -- a file containing frame deltas as a series of 8x8 pixel blocks
-* outputname_data.js -- a JS script containing the metadata required to turn the above in to an actual animation
+At the end, you'll get these files:
+
+* output_first.png -- a verbatim copy of the first frame of your video
+* output_blocks.png -- a file containing frame deltas as a series of 8x8 pixel blocks
+* output_data.js -- a JS script containing the metadata required to turn the above in to an actual animation
 
 The bulk of the "_data.js" file is the frame bitmaps. 
 
 ## Usage ##
+
+To add an animation to a page, load the "canvasanim.js" script and the "_data.js" script
+exported from "encode.rb", add a canvas to your page, and then add the following code
+to render the animation on to the canvas:
+
+    var a = new CanvasAnim(canvas, outputAnimation, 'output_first.png', 'output_blocks.png');
+    a.animate(10);
+
+The argument to the "animate" method is the frame rate.
+
+Look in the "demo" directory to find a complete example.
+
+## Lossy encoding ##
+
+By default, the output from "encode.rb" is entirely lossless. If you want to allow some loss, there's a 
+threshold value you can tweak at the top of "encode.rb" -- if you increase that, then the frame-to-frame block
+comparison will allow the block to differ a little from the previous frame without replacing it. This
+might be particularly handy if your source video was itself lossless, to prevent slight image noise from
+triggering a block replacement.
+
+If you just want to shrink the size of your video, you're probably better off converting the "_blocks.png"
+file to JPEG format, and using that in the CanvasAnim call instead of the PNG. This works surprisingly well,
+especially with more complicated source data.
+
+You can of course do the same thing with the first frame image, too -- if there's a lot going on in the first
+frame, then that can save you quite a bit of space, too.
