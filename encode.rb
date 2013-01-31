@@ -54,6 +54,7 @@ class Encoder
         @blocks = []
         @width = nil
         @height = nil
+        @last_frame = nil
     end
     
     def self.frame_rle_encode(in_array)
@@ -110,9 +111,14 @@ class Encoder
         return Encoder.frame_rle_encode(out_array)
     end
     
-    def add_frame(file1, file2)
-        image1 = ChunkyPNG::Image.from_file(file1)
-        image2 = ChunkyPNG::Image.from_file(file2)
+    def add_frame(fname)
+        if !@last_frame
+            @last_frame = ChunkyPNG::Image.from_file(fname)
+            return
+        end
+        
+        image1 = @last_frame
+        image2 = ChunkyPNG::Image.from_file(fname)
         
         if @width == nil
             @width = image1.width / BLOCK_SIZE
@@ -191,6 +197,8 @@ class Encoder
                 end
             end
         end
+        
+        @last_frame = image2
     end
     
     def write_blocks(out_fname)
@@ -239,10 +247,10 @@ if __FILE__ == $0
     
     frame_files = Dir.entries(in_dir).find_all { |x| File.extname(x) == ".png" } .sort
     
-    (frame_files.length-1).times do |i|
+    (frame_files.length).times do |i|
         puts "frame #{i+1}"
         
-        e.add_frame(File.join(in_dir, frame_files[i]), File.join(in_dir, frame_files[i+1]))
+        e.add_frame(File.join(in_dir, frame_files[i]))
     end
     FileUtils.cp(File.join(in_dir, frame_files[0]), "#{out_name}_first.png")
     puts "Writing block data..."
